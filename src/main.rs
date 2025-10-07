@@ -1,10 +1,18 @@
-use clap::{self, Parser};
+use clap::{self, Parser, command};
 use reqwest;
 use url::Url;
 #[derive(clap::Parser)]
+#[command(name = "rget")]
+#[command(author = "DCRlike")]
+#[command(version = "0.1")]
+#[command(about = "A simple Rust-based wget alternative", long_about = None)]
 struct Cli {
-    url: Option<String>,
-    path: Option<String>,
+    /// The URL to download
+    url: String,
+
+    /// The path to save the downloaded file
+    #[arg(short = 's', long)]
+    savepath: Option<String>,
 }
 
 fn get_filename_from_url(url: &str) -> Option<String> {
@@ -15,14 +23,8 @@ fn get_filename_from_url(url: &str) -> Option<String> {
 
 fn main() {
     let args = Cli::parse();
-    let url = match args.url {
-        Some(u) => u,
-        None => {
-            eprintln!("Error: URL is required");
-            std::process::exit(1);
-        }
-    };
-    let path = args.path.unwrap_or_else(|| {
+    let url = args.url;
+    let path = args.savepath.unwrap_or_else(|| {
         get_filename_from_url(&url).unwrap_or_else(|| {
             eprintln!("Error: Could not determine filename from URL. Please specify a path.");
             std::process::exit(1);
